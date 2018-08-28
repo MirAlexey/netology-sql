@@ -163,7 +163,15 @@ INSERT INTO test (  id, short_name, description, pass_level_norm, pass_level_goo
                  VALUES (2, 'Арифметика', 'Основы арифметики', 50, 70, 90, 10, 1);
 INSERT INTO test (  id, short_name, description, pass_level_norm, pass_level_good, pass_level_perf, id_creater, ParentId)  
                  VALUES (3, 'Алгебра', 'Основы алгебры', 50, 70, 90, 10, 1);
-
+-- дополнительные
+INSERT INTO test (  id, short_name, description, pass_level_norm, pass_level_good, pass_level_perf, id_creater, ParentId)  
+                 VALUES (4, 'Сложение', 'Основы арифметики. Сложение', 50, 70, 90, 10, 2);
+INSERT INTO test (  id, short_name, description, pass_level_norm, pass_level_good, pass_level_perf, id_creater, ParentId)  
+                 VALUES (5, 'Вычитание', 'Основы арифметики. Вычитание', 50, 70, 90, 10, 2);
+INSERT INTO test (  id, short_name, description, pass_level_norm, pass_level_good, pass_level_perf, id_creater, ParentId)  
+                 VALUES (6, 'Квадратные уравнения', 'Основы алгебры. Квадратные уравнения', 50, 70, 90, 10, 3);
+INSERT INTO test (  id, short_name, description, pass_level_norm, pass_level_good, pass_level_perf, id_creater, ParentId)  
+                 VALUES (7, 'Линейные уравнения', 'Основы алгебры. Линейные уравнения', 50, 70, 90, 10, 3);
 -- вопросы
 
 INSERT INTO type_question (  id, type, description)  VALUES (1, 'Вопрос с еденичным выбором', 'Для правильного ответа нужно выбрать единственный верный вариант ответа');
@@ -175,12 +183,20 @@ INSERT INTO question (  id, text, id_creater, id_type_question)  VALUES (2, 'В�
 INSERT INTO question (  id, text, id_creater, id_type_question)  VALUES (3, 'Чему равно 15/3', 10, 3);
 INSERT INTO question (  id, text, id_creater, id_type_question)  VALUES (4, 'Выберете верно сказанное про простые числа ', 10, 2);
 INSERT INTO question (  id, text, id_creater, id_type_question)  VALUES (5, 'Есть ли жизнь на Марсе', 10, 1);
+-- дополнительные
+INSERT INTO question (  id, text, id_creater, id_type_question)  VALUES (6, 'Чему равно 3-1', 10, 1);
+INSERT INTO question (  id, text, id_creater, id_type_question)  VALUES (7, 'Количество корней у квадратного уравнения? ', 10, 1);
 
 INSERT INTO test_question (id_test, id_question) VALUES (1,5);
 INSERT INTO test_question (id_test, id_question) VALUES (2,1);
 INSERT INTO test_question (id_test, id_question) VALUES (2,3);
 INSERT INTO test_question (id_test, id_question) VALUES (3,2);
 INSERT INTO test_question (id_test, id_question) VALUES (3,4);
+-- дополнительные
+INSERT INTO test_question (id_test, id_question) VALUES (4,1);
+INSERT INTO test_question (id_test, id_question) VALUES (5,6);
+INSERT INTO test_question (id_test, id_question) VALUES (6,7);
+INSERT INTO test_question (id_test, id_question) VALUES (7,2);
 
 -- ответы
 INSERT INTO answer  (id, text, explanation, correct, id_creater, id_question)  VALUES (1, '4', 'Доказательство этого вне пределах знаний автора',100, 10, 1);
@@ -193,7 +209,12 @@ INSERT INTO answer  (id, text, explanation, correct, id_creater, id_question)  V
 INSERT INTO answer  (id, text, explanation, correct, id_creater, id_question)  VALUES (8, 'Деляться только на себя и на 1.', 'Доказательство этого вне пределах знаний автора',1, 10, 4);
 INSERT INTO answer  (id, text, explanation, correct, id_creater, id_question)  VALUES (9, 'Есть! Я верю!', 'Доказательство этого вне пределах знаний автора',100, 10, 5);
 INSERT INTO answer  (id, text, explanation, correct, id_creater, id_question)  VALUES (10, 'Неизвестно. Ведуться исследования.', 'Доказательство этого вне пределах знаний автора',0, 10, 5);
-    
+-- дополнительные
+INSERT INTO answer  (id, text, explanation, correct, id_creater, id_question)  VALUES (11, '2', 'Доказательство этого вне пределах знаний автора',100, 10, 6);
+INSERT INTO answer  (id, text, explanation, correct, id_creater, id_question)  VALUES (12, '1', 'Доказательство этого вне пределах знаний автора',0, 10, 6);
+INSERT INTO answer  (id, text, explanation, correct, id_creater, id_question)  VALUES (13, '1 или 2', 'Доказательство этого вне пределах знаний автора',1, 10, 7);
+INSERT INTO answer  (id, text, explanation, correct, id_creater, id_question)  VALUES (14, '1 , 2 или 3', 'Доказательство этого вне пределах знаний автора',1, 10, 7);
+
 -- события
 INSERT INTO event_type (  id, type, description)  VALUES (1, 'Незначительное', 'Рядовое событие проходящее переодически');
 INSERT INTO event_type (  id, type, description)  VALUES (2, 'Важное', 'Важное событие проходящее достаточно редко и требующее повышенного внимания');
@@ -279,7 +300,28 @@ FROM event
 GROUP BY event.id,   person.first_name;
 
 --  1.2 Получить список тестов с параметерами
-WITH  count_question_in_test as (
+WITH RECURSIVE r AS (
+    SELECT 
+       test.id,
+       test.id as ParentId,
+       cqt.count,
+       test.short_name
+    FROM test 
+        JOIN cqt
+             ON test.id = cqt.id 
+    UNION
+    SELECT 
+        test.id,
+        r.ParentId,
+        cqt.count,
+        test.short_name
+    FROM  test
+        JOIN cqt 
+            ON test.id = cqt.id 
+       JOIN  r  
+             ON r.id = test.ParentId
+),
+ cqt as (
          SELECT 
                 test.id as id, 
                count(test_question.id_question) as count 
@@ -287,6 +329,9 @@ WITH  count_question_in_test as (
                 LEFT  JOIN test_question
                      ON test.id = test_question.id_test
         GROUP BY test.id
+),
+caqt as (
+     SELECT ParentId as id, sum(count) FROM r GROUP BY ParentId
 )
 SELECT 
     row_number() OVER () as №, 
@@ -297,11 +342,11 @@ SELECT
     t1.pass_level_perf || '%' as pass_perf,
     person.first_name || ' ' || person.last_name creator,
     count(t2.id) as count_include_test,
-    (SELECT count FROM count_question_in_test WHERE count_question_in_test.id = t1.id ) as count_question_test
+    (SELECT sum FROM caqt WHERE caqt.id = t1.id ) as count_question_test
     FROM test as t1 
        LEFT JOIN test as t2
             ON t1.id = t2.ParentId 
-      LEFT JOIN count_question_in_test as c
+      LEFT JOIN caqt as c
             ON t1.id = c.id
       JOIN person
            ON t1.id_creater = person.id 
@@ -415,3 +460,10 @@ FROM person as p
     GROUP BY p.id;
 
 SELECT * FROM status_person_event;
+
+
+
+
+
+
+
